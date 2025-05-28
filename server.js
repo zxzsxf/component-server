@@ -81,7 +81,8 @@ app.post('/upload', upload.single('file'), (req, res) => {
     version: version
   };
 
-  componentsInfo[componentName].push(componentInfo);
+  // 将新信息添加到数组开头
+  componentsInfo[componentName].unshift(componentInfo);
   saveComponentsInfo(componentsInfo);
   
   res.json({
@@ -122,6 +123,30 @@ app.get('/components/:componentName/:filename', (req, res) => {
   }
   
   res.sendFile(filePath);
+});
+
+// 获取组件信息文件
+app.get('/components-info', (req, res) => {
+  try {
+    const componentsInfo = readComponentsInfo();
+    // 获取服务器的域名和端口
+    const protocol = req.protocol;
+    const host = req.get('host');
+    const baseUrl = `${protocol}://${host}`;
+
+    // 为每个组件的 path 添加完整的 URL
+    const fullPathComponentsInfo = Object.entries(componentsInfo).reduce((acc, [componentName, versions]) => {
+      acc[componentName] = versions.map(version => ({
+        ...version,
+        path: `${baseUrl}${version.path}`
+      }));
+      return acc;
+    }, {});
+
+    res.json(fullPathComponentsInfo);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // 错误处理中间件
