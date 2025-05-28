@@ -10,14 +10,34 @@ const port = 4000;
 // 启用CORS
 app.use(cors());
 
+// 组件信息文件路径
+const componentsInfoPath = path.join(__dirname, 'components', 'components-info.json');
+
+// 确保组件信息文件存在
+if (!fs.existsSync(componentsInfoPath)) {
+  fs.writeFileSync(componentsInfoPath, JSON.stringify({}), 'utf-8');
+}
+
+// 读取组件信息
+function readComponentsInfo() {
+  try {
+    return JSON.parse(fs.readFileSync(componentsInfoPath, 'utf-8'));
+  } catch (error) {
+    return {};
+  }
+}
+
+// 保存组件信息
+function saveComponentsInfo(info) {
+  fs.writeFileSync(componentsInfoPath, JSON.stringify(info, null, 2), 'utf-8');
+}
+
 // 配置multer存储
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    // 获取组件名
     const componentName = req.body.componentName;
     const componentDir = path.join(__dirname, 'components', componentName);
     
-    // 如果组件目录不存在，创建它
     if (!fs.existsSync(componentDir)) {
       fs.mkdirSync(componentDir, { recursive: true });
     }
@@ -25,10 +45,9 @@ const storage = multer.diskStorage({
     cb(null, componentDir);
   },
   filename: function (req, file, cb) {
-    // 使用组件名和时间戳命名文件
     const componentName = req.body.componentName;
-    const timestamp = Date.now();
-    cb(null, `${componentName}.${timestamp}.js`);
+    const timestamp = req.body.timestamp || Date.now();
+    cb(null, `${componentName}-${timestamp}.js`);
   }
 });
 
@@ -45,38 +64,64 @@ app.post('/upload', upload.single('file'), (req, res) => {
   if (!req.file) {
     return res.status(400).send('No file uploaded.');
   }
+
+  const componentName = req.body.componentName;
+  const version = req.body.version || 'unknown';
+  const timestamp = req.body.timestamp || Date.now();
+  
+  // 更新组件信息
+  const componentsInfo = readComponentsInfo();
+  if (!componentsInfo[componentName]) {
+    componentsInfo[componentName] = [];
+  }
+
+  const componentInfo = {
+    path: `/components/${componentName}/${req.file.filename}`,
+    time: timestamp,
+    version: version
+  };
+
+  componentsInfo[componentName].push(componentInfo);
+  saveComponentsInfo(componentsInfo);
   
   res.json({
     message: 'File uploaded successfully',
     filename: req.file.filename,
-    path: req.file.path
+    path: componentInfo.path,
+    info: componentInfo
   });
 });
 
 // 获取组件列表
 app.get('/components', (req, res) => {
   try {
-    const components = fs.readdirSync(componentsDir);
-    res.json(components);
+    const componentsInfo = readComponentsInfo();
+    res.json(componentsInfo);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// 获取特定组件的所有版本
-app.get('/components/:componentName', (req, res) => {
-  const componentDir = path.join(componentsDir, req.params.componentName);
-  
-  if (!fs.existsSync(componentDir)) {
-    return res.status(404).send('Component not found');
-  }
-  
+// 获取特定组件的所有版本信息
+app.get('/components/:componentName/info', (req, res) => {
   try {
-    const files = fs.readdirSync(componentDir);
-    res.json(files);
+    const componentsInfo = readComponentsInfo();
+    const componentInfo = componentsInfo[req.params.componentName] || [];
+    res.json(componentInfo);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+});
+
+// 访问组件文件
+app.get('/components/:componentName/:filename', (req, res) => {
+  const filePath = path.join(componentsDir, req.params.componentName, req.params.filename);
+  
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).send('File not found');
+  }
+  
+  res.sendFile(filePath);
 });
 
 // 错误处理中间件
