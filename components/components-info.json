@@ -3,12 +3,24 @@
     {
       "path": "/components/button/button-1748446739186.js",
       "time": "1748446739186",
-      "version": "0.0.1"
+      "version": "0.0.1",
+      "publishInfo": {
+        "publisher": "system",
+        "publishTime": "1748446739186",
+        "description": "Initial release",
+        "status": "published"
+      }
     },
     {
       "path": "/components/button/button-1748446814240.js",
       "time": "1748446814240",
-      "version": "0.0.1-beta.1"
+      "version": "0.0.1-beta.1",
+      "publishInfo": {
+        "publisher": "system",
+        "publishTime": "1748446814240",
+        "description": "Beta release",
+        "status": "published"
+      }
     }
   ]
 }

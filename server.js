@@ -7,8 +7,9 @@ const fs = require('fs');
 const app = express();
 const port = 4000;
 
-// 启用CORS
+// 启用CORS和JSON解析
 app.use(cors());
+app.use(express.json());
 
 // 组件信息文件路径
 const componentsInfoPath = path.join(__dirname, 'components', 'components-info.json');
@@ -30,6 +31,44 @@ function readComponentsInfo() {
 // 保存组件信息
 function saveComponentsInfo(info) {
   fs.writeFileSync(componentsInfoPath, JSON.stringify(info, null, 2), 'utf-8');
+}
+
+// 活跃组件配置文件路径
+const activeComponentsPath = path.join(__dirname, 'components', 'active-components.json');
+
+// 确保活跃组件配置文件存在
+if (!fs.existsSync(activeComponentsPath)) {
+  fs.writeFileSync(activeComponentsPath, JSON.stringify({}), 'utf-8');
+}
+
+// 读取活跃组件配置
+function readActiveComponents() {
+  try {
+    return JSON.parse(fs.readFileSync(activeComponentsPath, 'utf-8'));
+  } catch (error) {
+    return {};
+  }
+}
+
+// 保存活跃组件配置
+function saveActiveComponents(info) {
+  fs.writeFileSync(activeComponentsPath, JSON.stringify(info, null, 2), 'utf-8');
+}
+
+// 更新活跃组件配置
+function updateActiveComponents() {
+  const componentsInfo = readComponentsInfo();
+  const activeComponents = {};
+
+  // 获取每个组件的最新版本
+  for (const [componentName, versions] of Object.entries(componentsInfo)) {
+    if (versions.length > 0) {
+      activeComponents[componentName] = versions[0];  // 取最新版本
+    }
+  }
+
+  saveActiveComponents(activeComponents);
+  return activeComponents;
 }
 
 // 配置multer存储
@@ -78,12 +117,21 @@ app.post('/upload', upload.single('file'), (req, res) => {
   const componentInfo = {
     path: `/components/${componentName}/${req.file.filename}`,
     time: timestamp,
-    version: version
+    version: version,
+    publishInfo: {
+      publisher: req.body.publisher || 'system',
+      publishTime: timestamp,
+      description: req.body.description || `Version ${version}`,
+      status: 'published'
+    }
   };
 
   // 将新信息添加到数组开头
   componentsInfo[componentName].unshift(componentInfo);
   saveComponentsInfo(componentsInfo);
+  
+  // 更新活跃组件配置
+  updateActiveComponents();
   
   res.json({
     message: 'File uploaded successfully',
@@ -144,6 +192,102 @@ app.get('/components-info', (req, res) => {
     }, {});
 
     res.json(fullPathComponentsInfo);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 新增组件信息
+app.post('/components/:componentName', (req, res) => {
+  try {
+    const { componentName } = req.params;
+    const componentData = req.body;
+    const componentsInfo = readComponentsInfo();
+
+    if (!componentsInfo[componentName]) {
+      componentsInfo[componentName] = [];
+    }
+
+    componentsInfo[componentName].unshift(componentData);
+    saveComponentsInfo(componentsInfo);
+
+    res.json({ message: 'Component info added successfully', data: componentData });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 更新组件信息
+app.put('/components/:componentName/:timestamp', (req, res) => {
+  try {
+    const { componentName, timestamp } = req.params;
+    const updateData = req.body;
+    const componentsInfo = readComponentsInfo();
+
+    if (!componentsInfo[componentName]) {
+      return res.status(404).json({ error: 'Component not found' });
+    }
+
+    const componentIndex = componentsInfo[componentName].findIndex(c => c.time === timestamp);
+    if (componentIndex === -1) {
+      return res.status(404).json({ error: 'Component version not found' });
+    }
+
+    componentsInfo[componentName][componentIndex] = {
+      ...componentsInfo[componentName][componentIndex],
+      ...updateData
+    };
+
+    saveComponentsInfo(componentsInfo);
+    res.json({ message: 'Component info updated successfully', data: componentsInfo[componentName][componentIndex] });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 删除组件信息
+app.delete('/components/:componentName/:timestamp', (req, res) => {
+  try {
+    const { componentName, timestamp } = req.params;
+    const componentsInfo = readComponentsInfo();
+
+    if (!componentsInfo[componentName]) {
+      return res.status(404).json({ error: 'Component not found' });
+    }
+
+    const initialLength = componentsInfo[componentName].length;
+    componentsInfo[componentName] = componentsInfo[componentName].filter(c => c.time !== timestamp);
+
+    if (initialLength === componentsInfo[componentName].length) {
+      return res.status(404).json({ error: 'Component version not found' });
+    }
+
+    if (componentsInfo[componentName].length === 0) {
+      delete componentsInfo[componentName];
+    }
+
+    saveComponentsInfo(componentsInfo);
+    res.json({ message: 'Component info deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 获取活跃组件配置
+app.get('/active-components', (req, res) => {
+  try {
+    const activeComponents = readActiveComponents();
+    res.json(activeComponents);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 手动更新活跃组件配置
+app.post('/active-components/update', (req, res) => {
+  try {
+    const activeComponents = updateActiveComponents();
+    res.json({ message: 'Active components updated successfully', data: activeComponents });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
