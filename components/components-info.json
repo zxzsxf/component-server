@@ -1,6 +1,51 @@
 {
   "button": [
     {
+      "path": "/components/button/button-1748876097257.js",
+      "time": "1748876097257",
+      "version": "0.0.3",
+      "publishInfo": {
+        "publisher": "szy",
+        "publishTime": "1748876097257",
+        "description": "Version 0.0.3",
+        "buildInfo": "$npm_config_buildInfo",
+        "status": "published"
+      },
+      "buildDetails": {
+        "componentName": "button",
+        "version": "0.0.3",
+        "buildTime": "2025-06-02 22:54:51",
+        "gitCommit": "60a1fce381d17e02d409e492a8427926c5abb786",
+        "gitBranch": "master",
+        "buildInfo": "$npm_config_buildInfo"
+      },
+      "metadata": {
+        "name": "@zxz-ui/button",
+        "dependencies": {},
+        "peerDependencies": {
+          "react": "^16.13.1",
+          "react-dom": "^16.13.1"
+        },
+        "author": "zxz",
+        "license": "ISC",
+        "repository": {
+          "type": "git",
+          "url": ""
+        }
+      }
+    },
+    {
+      "path": "/components/button/button-1748875786807.js",
+      "time": "1748875786807",
+      "version": "0.0.2",
+      "publishInfo": {
+        "publisher": "szy",
+        "publishTime": "1748875786807",
+        "description": "Version 0.0.2",
+        "status": "published"
+      }
+    },
+    {
       "path": "/components/button/button-1748446739186.js",
       "time": "1748446739186",
       "version": "0.0.1",
@@ -20,6 +65,35 @@
         "publishTime": "1748446814240",
         "description": "Beta release",
         "status": "published"
+      }
+    }
+  ],
+  "card": [
+    {
+      "path": "/components/card/card-1748877401450.js",
+      "time": "1748877401450",
+      "version": "0.0.1",
+      "publishInfo": {
+        "publisher": "szy",
+        "publishTime": "1748877401450",
+        "description": "Version 0.0.1",
+        "buildInfo": "$npm_config_buildInfo",
+        "status": "published"
+      },
+      "buildDetails": {},
+      "metadata": {
+        "name": "@zxz-ui/card",
+        "dependencies": {},
+        "peerDependencies": {
+          "react": "^16.13.1",
+          "react-dom": "^16.13.1"
+        },
+        "author": "zxz",
+        "license": "ISC",
+        "repository": {
+          "type": "git",
+          "url": ""
+        }
       }
     }
   ]

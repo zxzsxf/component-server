@@ -107,6 +107,8 @@ app.post('/upload', upload.single('file'), (req, res) => {
   const componentName = req.body.componentName;
   const version = req.body.version || 'unknown';
   const timestamp = req.body.timestamp || Date.now();
+  const buildInfo = req.body.buildInfo || '';
+  const metadata = req.body.metadata ? JSON.parse(req.body.metadata) : {};
   
   // 更新组件信息
   const componentsInfo = readComponentsInfo();
@@ -122,7 +124,17 @@ app.post('/upload', upload.single('file'), (req, res) => {
       publisher: req.body.publisher || 'system',
       publishTime: timestamp,
       description: req.body.description || `Version ${version}`,
+      buildInfo: buildInfo,
       status: 'published'
+    },
+    buildDetails: metadata.buildDetails || {},
+    metadata: {
+      name: metadata.name,
+      dependencies: metadata.dependencies,
+      peerDependencies: metadata.peerDependencies,
+      author: metadata.author,
+      license: metadata.license,
+      repository: metadata.repository
     }
   };
 
