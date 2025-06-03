@@ -34,17 +34,24 @@
     }
   },
   "card": {
-    "path": "/components/card/card-1748877401450.js",
-    "time": "1748877401450",
+    "path": "/components/card/card-1748879130268.js",
+    "time": "1748879130268",
     "version": "0.0.1",
     "publishInfo": {
       "publisher": "szy",
-      "publishTime": "1748877401450",
+      "publishTime": "1748879130268",
       "description": "Version 0.0.1",
       "buildInfo": "$npm_config_buildInfo",
       "status": "published"
     },
-    "buildDetails": {},
+    "buildDetails": {
+      "componentName": "card",
+      "version": "0.0.1",
+      "buildTime": "2025-06-02 23:45:22",
+      "gitCommit": "208ead90ec29d28dd39775148b62f489209c9f4e",
+      "gitBranch": "master",
+      "buildInfo": "$npm_config_buildInfo"
+    },
     "metadata": {
       "name": "@zxz-ui/card",
       "dependencies": {},

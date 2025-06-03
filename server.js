@@ -98,6 +98,64 @@ if (!fs.existsSync(componentsDir)) {
   fs.mkdirSync(componentsDir, { recursive: true });
 }
 
+// 根据组件名称和版本查找组件文件
+app.post('/components/find', (req, res) => {
+  try {
+    const { componentName, version } = req.body;
+    
+    if (!componentName || !version) {
+      return res.status(400).json({ error: '组件名称和版本都是必需的' });
+    }
+
+    const componentsInfo = readComponentsInfo();
+    
+    if (!componentsInfo[componentName]) {
+      return res.status(404).json({ error: '未找到该组件' });
+    }
+
+    const componentVersion = componentsInfo[componentName].find(v => v.version === version);
+    
+    if (!componentVersion) {
+      return res.status(404).json({ error: '未找到该版本的组件' });
+    }
+
+    // 获取服务器的域名和端口
+    const protocol = req.protocol;
+    const host = req.get('host');
+    const baseUrl = `${protocol}://${host}`;
+
+    // 返回完整的组件信息，包括完整的URL
+    const result = {
+      ...componentVersion,
+      path: `${baseUrl}${componentVersion.path}`
+    };
+
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 新增组件信息
+app.post('/components/:componentName', (req, res) => {
+  try {
+    const { componentName } = req.params;
+    const componentData = req.body;
+    const componentsInfo = readComponentsInfo();
+
+    if (!componentsInfo[componentName]) {
+      componentsInfo[componentName] = [];
+    }
+
+    componentsInfo[componentName].unshift(componentData);
+    saveComponentsInfo(componentsInfo);
+
+    res.json({ message: 'Component info added successfully', data: componentData });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // 文件上传路由
 app.post('/upload', upload.single('file'), (req, res) => {
   if (!req.file) {
@@ -204,26 +262,6 @@ app.get('/components-info', (req, res) => {
     }, {});
 
     res.json(fullPathComponentsInfo);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// 新增组件信息
-app.post('/components/:componentName', (req, res) => {
-  try {
-    const { componentName } = req.params;
-    const componentData = req.body;
-    const componentsInfo = readComponentsInfo();
-
-    if (!componentsInfo[componentName]) {
-      componentsInfo[componentName] = [];
-    }
-
-    componentsInfo[componentName].unshift(componentData);
-    saveComponentsInfo(componentsInfo);
-
-    res.json({ message: 'Component info added successfully', data: componentData });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

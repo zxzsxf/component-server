@@ -105,6 +105,39 @@
   - `filename`：文件名（路径参数）
 - **响应**：组件的 JS 文件内容
 
+### 6. 根据组件名称和版本查找组件
+
+根据组件名称和版本号查找特定组件。
+
+- **接口**：`POST /components/find`
+- **Content-Type**：`application/json`
+- **请求参数**：
+  ```json
+  {
+    "componentName": "组件名称",
+    "version": "版本号"
+  }
+  ```
+- **响应示例**：
+  ```json
+  {
+    "path": "http://服务器地址:端口/components/组件名/组件名-时间戳.js",
+    "time": 1234567890,
+    "version": "1.0.0",
+    "publishInfo": {
+      "publisher": "system",
+      "publishTime": 1234567890,
+      "description": "Version 1.0.0",
+      "buildInfo": "",
+      "status": "published"
+    }
+  }
+  ```
+- **错误响应**：
+  - 400：组件名称或版本号缺失
+  - 404：组件或版本不存在
+  - 500：服务器内部错误
+
 ## 数据存储
 
 组件信息存储在 `components/components-info.json` 文件中，格式如下：
