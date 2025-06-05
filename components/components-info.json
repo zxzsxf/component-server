@@ -130,39 +130,5 @@
         }
       }
     }
-  ],
-  "find": [
-    {
-      "componentName": "card",
-      "version": "0.0.1"
-    },
-    {
-      "componentName": "button",
-      "version": "0.0.3"
-    },
-    {
-      "componentName": "card",
-      "version": "0.0.1"
-    },
-    {
-      "componentName": "button",
-      "version": "0.0.3"
-    },
-    {
-      "componentName": "card",
-      "version": "0.0.1"
-    },
-    {
-      "componentName": "card",
-      "version": "0.0.1"
-    },
-    {
-      "componentName": "button",
-      "version": "0.0.3"
-    },
-    {
-      "componentName": "button",
-      "version": "0.0.3"
-    }
   ]
 }

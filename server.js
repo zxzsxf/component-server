@@ -136,6 +136,53 @@ app.post('/components/find', (req, res) => {
   }
 });
 
+// 发布组件接口
+app.post('/components/publish', (req, res) => {
+  try {
+    const { componentName, path, version } = req.body;
+    
+    if (!componentName || !path || !version) {
+      return res.status(400).json({ error: '组件名称、路径和版本都是必需的' });
+    }
+
+    const componentsInfo = readComponentsInfo();
+    const activeComponents = readActiveComponents();
+    
+    if (!componentsInfo[componentName]) {
+      return res.status(404).json({ error: '未找到该组件' });
+    }
+
+    const componentVersion = componentsInfo[componentName].find(v => v.version === version);
+    
+    if (!componentVersion) {
+      return res.status(404).json({ error: '未找到该版本的组件' });
+    }
+
+    // 更新组件状态为已发布
+    componentVersion.publishInfo.status = 'published';
+    componentVersion.publishInfo.publishTime = Date.now().toString();
+    
+    // 创建完整的组件信息对象
+    const activeComponentInfo = {
+      ...componentVersion,
+    };
+
+    // 更新活跃组件配置
+    activeComponents[componentName] = activeComponentInfo;
+    saveActiveComponents(activeComponents);
+
+    // 返回更新后的活跃组件信息
+    res.json({ 
+      message: '组件发布成功',
+      component: activeComponentInfo,
+      activeComponents: activeComponents
+    });
+  } catch (error) {
+    console.error('发布组件时出错:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // 新增组件信息
 app.post('/components/:componentName', (req, res) => {
   try {
@@ -342,6 +389,8 @@ app.post('/active-components/update', (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+
 
 // 错误处理中间件
 app.use((err, req, res, next) => {
